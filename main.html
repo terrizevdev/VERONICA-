@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CHALAH MINI BOT</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(180deg,#070204 0%,#230203 100%);
+      color:#fff;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      overflow:hidden;
+    }
+
+    /* bubbles */
+    .neon-bubbles{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .neon-bubbles span{
+      position:absolute;display:block;width:14px;height:14px;border-radius:50%;
+      background:radial-gradient(circle,#ff4d4d,#7a0000);
+      filter:drop-shadow(0 0 8px #ff4d4d);opacity:0.8;
+      animation:rise 8s linear infinite, drift 4s ease-in-out infinite;
+    }
+    @keyframes rise{0%{transform:translateY(110vh) scale(.6);opacity:0}30%{opacity:1}100%{transform:translateY(-15vh) scale(1.15);opacity:0}}
+    @keyframes drift{0%{transform:translateX(0)}50%{transform:translateX(18px)}100%{transform:translateX(0)}}
+
+    /* card */
+    .wrap{position:relative;z-index:2;width:380px;max-width:95%}
+    .box{
+      position:relative;
+      background:linear-gradient(180deg,rgba(45,0,0,0.5),rgba(10,0,0,0.45));
+      border-radius:20px;
+      padding:90px 22px 26px; /* top padding large to make room for avatar */
+      box-shadow:0 10px 40px rgba(255,60,60,0.12);
+      border:1px solid rgba(255,80,80,0.08);
+      text-align:center;
+      transition:transform .5s ease,opacity .45s ease;
+    }
+
+    /* avatar image overlapping top */
+    .avatar{
+      position:absolute;
+      top:-60px;
+      left:50%;
+      transform:translateX(-50%);
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      overflow:hidden;
+      border:6px solid rgba(0,0,0,0.5);
+      box-shadow:0 8px 30px rgba(255,40,40,0.22);
+      background:linear-gradient(135deg,#220000,#5a0000);
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+
+    h3{color:#ff6b6b;margin-top:6px;text-shadow:0 0 12px rgba(255,90,90,0.25)}
+    h6{color:#ffbfbf;font-weight:500;margin:6px 0}
+
+    .input-container{display:flex;margin-top:12px;gap:0}
+    .input-container input{
+      flex:1;padding:12px 14px;border-radius:10px 0 0 10px;border:none;outline:none;background:#0f0505;color:#fff;
+      font-size:15px;border:1px solid rgba(255,255,255,0.04);transition:box-shadow .25s,border-color .25s
+    }
+    .input-container input:focus{box-shadow:0 0 16px rgba(255,80,80,0.25);border-color:#ff4d4d}
+    .input-container button{
+      padding:12px 14px;border-radius:0 10px 10px 0;border:none;background:#ff3333;color:#fff;font-weight:700;cursor:pointer;
+      transition:transform .15s,box-shadow .15s
+    }
+    .input-container button:active{transform:translateY(1px)}
+    .info{margin-top:14px;color:#ffdede;font-weight:600;text-shadow:0 0 6px rgba(255,120,120,0.06)}
+
+    .actions{display:flex;gap:12px;justify-content:center;margin-top:16px}
+    .join-btn{
+      background:linear-gradient(180deg,#19c37d,#0ea84f);color:#002200;padding:10px 18px;border-radius:12px;border:none;font-weight:800;
+      cursor:pointer;box-shadow:0 10px 30px rgba(10,160,90,0.12)
+    }
+
+    .ghost-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:#ffdede;cursor:pointer}
+
+    /* hide animation for slide-out */
+    .box.hide{transform:translateY(120px) scale(.95);opacity:0}
+
+    /* small screens */
+    @media (max-width:420px){
+      .avatar{width:96px;height:96px;top:-48px}
+      .box{padding-top:78px}
+    }
+  </style>
+</head>
+<body>
+  <div class="neon-bubbles" id="neon-bubbles"></div>
+
+  <div class="wrap">
+    <div class="box" id="mainBox">
+      <!-- avatar (image overlaps top of card) -->
+      <div class="avatar">
+        <img src="https://files.catbox.moe/letrek.jpg" alt="Avatar">
+      </div>
+
+      <h3>CHALAH MD MINI BOT</h3>
+      <h6>CREATE BY CHALANA</h6>
+      <h6>📱 Enter your number with country code</h6>
+
+      <div class="input-container" style="margin-top:10px">
+        <input id="number" type="tel" placeholder="947422xxxx" inputmode="numeric" pattern="[0-9]*" />
+        <button id="submit">Submit</button>
+      </div>
+
+      <div class="info" id="pair" style="min-height:28px"></div>
+
+      <div class="actions">
+        <button class="join-btn" id="joinBtn">Join Channel</button>
+        <button class="ghost-btn" id="clearBtn" title="Clear">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // generate neon bubbles
+    const container = document.getElementById('neon-bubbles');
+    for (let i=0;i<36;i++){
+      const s=document.createElement('span');
+      s.style.left = Math.random()*100 + 'vw';
+      s.style.bottom = Math.random()*20 - 10 + 'vh';
+      s.style.width = (10 + Math.random()*18) + 'px';
+      s.style.height = s.style.width;
+      s.style.animationDuration = (6 + Math.random()*6) + 's';
+      s.style.animationDelay = (Math.random()*6) + 's';
+      container.appendChild(s);
+    }
+
+    // submit behavior (same as before but now shows in #pair)
+    const pair = document.getElementById('pair');
+    const submit = document.getElementById('submit');
+    const num = document.getElementById('number');
+
+    submit.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!num.value || num.value.replace(/[^0-9]/g,'').length < 11) {
+        pair.innerHTML = '<span style="color:#ffb3b3;font-weight:700">Invalid or missing number</span>';
+        return;
+      }
+      const number = num.value.replace(/[^0-9]/g,'');
+      num.value = '+' + number;
+      num.style.background = '#120000';
+      pair.innerHTML = '<span style="color:#ffdede;font-weight:700">Please wait...</span>';
+      try {
+        let res = await fetch(`/code?number=${number}`);
+        let data = await res.json();
+        let code = data.code || 'Service Unavailable';
+        pair.innerHTML = `<div id="copy" style="color:#ffb3b3;font-weight:700;cursor:pointer" onclick="copyCode()"><strong>CODE:</strong> <span style="color:#fff">${code}</span></div>`;
+      } catch (err) {
+        pair.innerHTML = '<span style="color:orangered;font-weight:700">Error fetching code</span>';
+      }
+    });
+
+    function copyCode(){
+      const el = document.getElementById('copy');
+      if (!el) return;
+      const txt = el.innerText.replace('CODE:','').trim();
+      navigator.clipboard?.writeText(txt).then(()=>{
+        const old = el.innerHTML;
+        el.innerHTML = '<strong style="color:lime">COPIED</strong>';
+        setTimeout(()=> el.innerHTML = old,700);
+      }).catch(()=>{});
+    }
+
+    // clear button
+    document.getElementById('clearBtn').addEventListener('click', ()=> {
+      num.value=''; pair.innerHTML=''; num.type='tel'; num.style.background='';
+    });
+
+    // join button: slide & fade then open link
+    const joinBtn = document.getElementById('joinBtn');
+    const mainBox = document.getElementById('mainBox');
+    const channelURL = "https://whatsapp.com/channel/0029Vb5OiseHltY10IBkF112/1066";
+
+    joinBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      // play a small scale/translate animation by toggling hide class
+      mainBox.classList.add('hide');
+      // after animation ends, open link
+      setTimeout(()=> {
+        // try open in new tab; fallback to same tab
+        const opened = window.open(channelURL, '_blank', 'noopener,noreferrer');
+        if (!opened) window.location.href = channelURL;
+      }, 450);
+    });
+
+    // optional: allow pressing Enter on input to submit
+    num.addEventListener('keydown', (e)=> {
+      if (e.key === 'Enter') submit.click();
+    });
+  </script>
+</body>
+</html>
