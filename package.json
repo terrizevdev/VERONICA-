@@ -25,6 +25,7 @@
     "fs": "0.0.1-security",
     "file-type": "21.0.0",
     "axios": "^1.2.5",
+    "dotenv": "^16.4.5",
     "moment-timezone": "^0.6.0"
   },
   "engines": {
