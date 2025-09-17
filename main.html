@@ -1,163 +1,430 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="si">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CHALAH MINI BOT</title>
+  <title>VERONICA MINI BOT</title>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
+    /* Reset & base */
     *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --accent:#ff4d6d;
+      --accent-2:#7bffcc;
+      --card:#0e0b0c;
+      --glass: rgba(255,255,255,0.04);
+      --muted-bg: rgba(0,0,0,0.45);
+      --radius:14px;
+      --soft: 12px;
+    }
+    html,body{height:100%}
     body{
       font-family:'Poppins',sans-serif;
-      background:linear-gradient(180deg,#070204 0%,#230203 100%);
+      background:#070204;
       color:#fff;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:20px;
+      padding:28px;
       overflow:hidden;
     }
 
-    /* bubbles */
-    .neon-bubbles{position:fixed;inset:0;z-index:0;pointer-events:none}
+    /* background video */
+    .bg-video{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:0;
+      filter: contrast(1) saturate(1.05) brightness(.45);
+      transform: scale(1.02);
+    }
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: linear-gradient(180deg, rgba(35,2,3,0.12) 0%, rgba(7,2,4,0.55) 60%);
+      z-index:1;
+      pointer-events:none;
+    }
+
+    /* neon bubbles */
+    .neon-bubbles{
+      position:fixed;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+      overflow:hidden;
+    }
     .neon-bubbles span{
-      position:absolute;display:block;width:14px;height:14px;border-radius:50%;
-      background:radial-gradient(circle,#ff4d4d,#7a0000);
-      filter:drop-shadow(0 0 8px #ff4d4d);opacity:0.8;
-      animation:rise 8s linear infinite, drift 4s ease-in-out infinite;
+      position:absolute;
+      display:block;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0.02) 40%), linear-gradient(45deg, rgba(255,77,109,0.14), rgba(123,255,204,0.06));
+      box-shadow:0 0 18px rgba(255,77,109,0.08), 0 0 6px rgba(123,255,204,0.04) inset;
+      border-radius:50%;
+      opacity:.75;
+      transform: translateY(0) scale(1);
+      animation: drift linear infinite;
     }
-    @keyframes rise{0%{transform:translateY(110vh) scale(.6);opacity:0}30%{opacity:1}100%{transform:translateY(-15vh) scale(1.15);opacity:0}}
-    @keyframes drift{0%{transform:translateX(0)}50%{transform:translateX(18px)}100%{transform:translateX(0)}}
+    @keyframes drift{
+      from{ transform: translateY(0) scale(1); opacity:.9 }
+      to{ transform: translateY(-140vh) scale(.6); opacity:0.05 }
+    }
 
-    /* card */
-    .wrap{position:relative;z-index:2;width:380px;max-width:95%}
-    .box{
+    /* centered wrapper & framing */
+    .wrap{
       position:relative;
-      background:linear-gradient(180deg,rgba(45,0,0,0.5),rgba(10,0,0,0.45));
-      border-radius:20px;
-      padding:90px 22px 26px; /* top padding large to make room for avatar */
-      box-shadow:0 10px 40px rgba(255,60,60,0.12);
-      border:1px solid rgba(255,80,80,0.08);
-      text-align:center;
-      transition:transform .5s ease,opacity .45s ease;
+      z-index:2;
+      width:min(980px, 96vw);
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
     }
 
-    /* avatar image overlapping top */
+    .frame {
+      width:100%;
+      border-radius:20px;
+      padding:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* main card uses responsive grid */
+    .card {
+      width:100%;
+      max-width:940px;
+      border-radius:16px;
+      padding:22px;
+      display:grid;
+      grid-template-columns: 1fr 260px;
+      gap:20px;
+      align-items:start;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));
+      border-radius:14px;
+      position:relative;
+      overflow:visible;
+      backdrop-filter: blur(6px) saturate(1.05);
+    }
+
+    /* avatar framed and overlapping */
     .avatar{
       position:absolute;
-      top:-60px;
-      left:50%;
-      transform:translateX(-50%);
-      width:120px;
-      height:120px;
-      border-radius:50%;
+      left:28px;
+      top:-48px;
+      width:clamp(86px, 16vw, 160px);
+      height:clamp(86px, 16vw, 160px);
+      border-radius:20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 4px 16px rgba(255,77,109,0.06);
+      border: 2px solid rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
       overflow:hidden;
-      border:6px solid rgba(0,0,0,0.5);
-      box-shadow:0 8px 30px rgba(255,40,40,0.22);
-      background:linear-gradient(135deg,#220000,#5a0000);
+      z-index:3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-
-    h3{color:#ff6b6b;margin-top:6px;text-shadow:0 0 12px rgba(255,90,90,0.25)}
-    h6{color:#ffbfbf;font-weight:500;margin:6px 0}
-
-    .input-container{display:flex;margin-top:12px;gap:0}
-    .input-container input{
-      flex:1;padding:12px 14px;border-radius:10px 0 0 10px;border:none;outline:none;background:#0f0505;color:#fff;
-      font-size:15px;border:1px solid rgba(255,255,255,0.04);transition:box-shadow .25s,border-color .25s
-    }
-    .input-container input:focus{box-shadow:0 0 16px rgba(255,80,80,0.25);border-color:#ff4d4d}
-    .input-container button{
-      padding:12px 14px;border-radius:0 10px 10px 0;border:none;background:#ff3333;color:#fff;font-weight:700;cursor:pointer;
-      transition:transform .15s,box-shadow .15s
-    }
-    .input-container button:active{transform:translateY(1px)}
-    .info{margin-top:14px;color:#ffdede;font-weight:600;text-shadow:0 0 6px rgba(255,120,120,0.06)}
-
-    .actions{display:flex;gap:12px;justify-content:center;margin-top:16px}
-    .join-btn{
-      background:linear-gradient(180deg,#19c37d,#0ea84f);color:#002200;padding:10px 18px;border-radius:12px;border:none;font-weight:800;
-      cursor:pointer;box-shadow:0 10px 30px rgba(10,160,90,0.12)
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
-    .ghost-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:#ffdede;cursor:pointer}
+    /* content column */
+    .content{
+      padding-left:18px;
+      padding-top:8px;
+    }
+    .title{
+      font-weight:600;
+      font-size:18px;
+      letter-spacing:0.6px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .subtitle{
+      color: #ffdede;
+      font-size:13px;
+      margin-top:6px;
+      opacity:0.95;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top:18px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
-    /* hide animation for slide-out */
-    .box.hide{transform:translateY(120px) scale(.95);opacity:0}
+    .input-row{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="tel"]{
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.04);
+      background:var(--glass);
+      color:#fff;
+      outline:none;
+      font-size:15px;
+      width:260px;
+      transition: box-shadow .18s ease;
+    }
+    input[type="tel"]:focus{ box-shadow: 0 6px 24px rgba(123,255,204,0.06); }
 
-    /* small screens */
+    button.btn{
+      background: linear-gradient(90deg,var(--accent), #ff8aa2);
+      color:#fff;
+      border:0;
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      box-shadow: 0 8px 26px rgba(255,77,109,0.12);
+    }
+    button.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      padding:8px 12px;
+      border-radius:10px;
+      color:#ffdede;
+      cursor:pointer;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .status{
+      margin-left:6px;
+      color:#ffb3b3;
+      font-weight:700;
+    }
+
+    /* right column */
+    .right-col{
+      width:260px;
+      min-width:200px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+    }
+    .card-mini{
+      width:100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,0.03);
+      text-align:center;
+      font-size:13px;
+    }
+
+    .sound-bar{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+    }
+    .icon-btn{
+      background: rgba(255,255,255,0.03);
+      border-radius:10px;
+      padding:8px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,0.02);
+      color:#ffdede;
+    }
+
+    .hide{ transform:translateY(18px) scale(.98); opacity:0; transition:all .45s cubic-bezier(.2,.9,.2,1); }
+
+    /* small screens: stack, center everything */
+    @media (max-width:880px){
+      .card{
+        grid-template-columns: 1fr;
+        padding-top:72px; /* space for avatar */
+        gap:14px;
+      }
+      .avatar{
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+        top:-64px;
+      }
+      .content{ padding-left:0; text-align:center; }
+      .input-row{ justify-content:center; }
+      .right-col{ width:100%; flex-direction:row; gap:8px; justify-content:center; }
+      .card-mini{ flex:1; }
+      input[type="tel"]{ width:100%; max-width:360px; }
+    }
+
+    /* very small phones */
     @media (max-width:420px){
-      .avatar{width:96px;height:96px;top:-48px}
-      .box{padding-top:78px}
+      .wrap{ padding:12px; }
+      .card{ padding:16px; }
+      .avatar{ top:-56px; width:96px; height:96px; }
+      .title{ font-size:16px; }
+      .subtitle{ font-size:13px; }
+      .card-mini{ padding:10px; font-size:12px; }
     }
   </style>
 </head>
 <body>
+  <!-- background video -->
+  <video id="bgVideo" class="bg-video" autoplay loop muted playsinline crossorigin="anonymous">
+    <source src="https://files.catbox.moe/1r8537.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
+
   <div class="neon-bubbles" id="neon-bubbles"></div>
 
   <div class="wrap">
-    <div class="box" id="mainBox">
-      <!-- avatar (image overlaps top of card) -->
-      <div class="avatar">
-        <img src="https://files.catbox.moe/letrek.jpg" alt="Avatar">
-      </div>
+    <div class="frame" role="region" aria-label="VERONICA Mini Bot frame">
+      <div class="card" id="mainBox" role="article">
+        <!-- avatar overlaps the top-left (or centered on mobile) -->
+        <div class="avatar" title="VERONICA MINI BOT">
+          <img src="https://files.catbox.moe/c3aug8.jpg" alt="VERONICA MINI BOT">
+        </div>
 
-      <h3>CHALAH MD MINI BOT</h3>
-      <h6>CREATE BY CHALANA</h6>
-      <h6>📱 Enter your number with country code</h6>
+        <!-- left/main content -->
+        <div class="content">
+          <div class="title">
+            <div style="display:flex;align-items:center;gap:10px">
+              <strong style="font-size:18px">VERONICA MINI BOT</strong>
+              <span style="font-size:12px;color:#ffdede;opacity:.85;padding:6px 10px;border-radius:8px;background:linear-gradient(90deg,rgba(255,77,109,0.06),rgba(123,255,204,0.03));border:1px solid rgba(255,255,255,0.02)">Mini • Bot</span>
+            </div>
+          </div>
 
-      <div class="input-container" style="margin-top:10px">
-        <input id="number" type="tel" placeholder="947422xxxx" inputmode="numeric" pattern="[0-9]*" />
-        <button id="submit">Submit</button>
-      </div>
+          <div class="subtitle">Enter a phone number to request a verification code or join our channel. Works smoothly on phones and desktop.</div>
 
-      <div class="info" id="pair" style="min-height:28px"></div>
+          <div class="controls" aria-hidden="false">
+            <div class="input-row" role="group" aria-label="Number input and actions">
+              <input id="number" type="tel" placeholder="Enter phone number (e.g. +12345678901)" inputmode="tel" autocomplete="tel" />
+              <button id="submit" class="btn" title="Request code" aria-label="Send request"><i class="fas fa-paper-plane"></i> <span class="vis">Send</span></button>
+              <button id="clearBtn" class="ghost" title="Clear" aria-label="Clear input"><i class="fas fa-eraser"></i></button>
+            </div>
+            <div id="pair" class="status" aria-live="polite" style="margin-left:6px"></div>
+          </div>
 
-      <div class="actions">
-        <button class="join-btn" id="joinBtn">Join Channel</button>
-        <button class="ghost-btn" id="clearBtn" title="Clear">Clear</button>
+          <div style="margin-top:12px; display:flex; gap:10px; align-items:center; justify-content:flex-start;">
+            <button id="joinBtn" class="ghost" title="Join channel" aria-label="Join channel"><i class="fab fa-whatsapp"></i> Join Channel</button>
+
+            <div class="sound-bar" style="margin-left:6px">
+              <div id="soundToggle" class="icon-btn" role="button" aria-pressed="false" aria-label="Toggle video sound" title="Toggle sound (video)">
+                <i id="soundIcon" class="fas fa-volume-mute" aria-hidden="true"></i>
+              </div>
+              <div id="musicToggle" class="icon-btn" role="button" aria-pressed="false" aria-label="Play or pause ambient" title="Play/Pause ambient">
+                <i id="musicIcon" class="fas fa-play" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- right column -->
+        <aside class="right-col" aria-label="Quick information">
+          <div class="card-mini" role="status" aria-live="polite">
+            <div style="font-size:13px;font-weight:600">Status</div>
+            <div style="margin-top:6px;color:#ffdede" id="statusText">Ready</div>
+          </div>
+
+          <div class="card-mini">
+            <div style="font-size:13px;font-weight:600">Quick Actions</div>
+            <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
+              <button id="copyBtn" class="ghost" title="Copy channel link" aria-label="Copy channel link"><i class="fas fa-link"></i></button>
+              <button id="openBtn" class="ghost" title="Open channel" aria-label="Open channel"><i class="fas fa-external-link-alt"></i></button>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   </div>
+
+  <!-- ambient audio (replace with actual audio file for separate music) -->
+  <audio id="ambient" loop crossorigin="anonymous">
+    <source src="https://files.catbox.moe/1r8537.mp4" type="audio/mp4">
+  </audio>
 
   <script>
     // generate neon bubbles
     const container = document.getElementById('neon-bubbles');
     for (let i=0;i<36;i++){
       const s=document.createElement('span');
+      const size = 8 + Math.random()*26;
       s.style.left = Math.random()*100 + 'vw';
-      s.style.bottom = Math.random()*20 - 10 + 'vh';
-      s.style.width = (10 + Math.random()*18) + 'px';
-      s.style.height = s.style.width;
-      s.style.animationDuration = (6 + Math.random()*6) + 's';
+      s.style.bottom = (Math.random()*20 - 10) + 'vh';
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.animationDuration = (8 + Math.random()*8) + 's';
       s.style.animationDelay = (Math.random()*6) + 's';
+      s.style.opacity = 0.6 + Math.random()*0.4;
       container.appendChild(s);
     }
 
-    // submit behavior (same as before but now shows in #pair)
+    // elements & actions
     const pair = document.getElementById('pair');
     const submit = document.getElementById('submit');
     const num = document.getElementById('number');
+    const clearBtn = document.getElementById('clearBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const mainBox = document.getElementById('mainBox');
+    const statusText = document.getElementById('statusText');
+    const channelURL = "https://whatsapp.com/channel/0029Vb5OiseHltY10IBkF112/1066";
+    const copyBtn = document.getElementById('copyBtn');
+    const openBtn = document.getElementById('openBtn');
 
+    // sound
+    const bgVideo = document.getElementById('bgVideo');
+    const ambient = document.getElementById('ambient');
+    const soundToggle = document.getElementById('soundToggle');
+    const soundIcon = document.getElementById('soundIcon');
+    const musicToggle = document.getElementById('musicToggle');
+    const musicIcon = document.getElementById('musicIcon');
+
+    let ambientPlaying = false;
+
+    // Submit / fetch code
     submit.addEventListener('click', async (e) => {
       e.preventDefault();
       if (!num.value || num.value.replace(/[^0-9]/g,'').length < 11) {
         pair.innerHTML = '<span style="color:#ffb3b3;font-weight:700">Invalid or missing number</span>';
+        statusText.innerText = 'Invalid input';
         return;
       }
       const number = num.value.replace(/[^0-9]/g,'');
       num.value = '+' + number;
       num.style.background = '#120000';
       pair.innerHTML = '<span style="color:#ffdede;font-weight:700">Please wait...</span>';
+      statusText.innerText = 'Requesting code...';
+
       try {
         let res = await fetch(`/code?number=${number}`);
         let data = await res.json();
         let code = data.code || 'Service Unavailable';
         pair.innerHTML = `<div id="copy" style="color:#ffb3b3;font-weight:700;cursor:pointer" onclick="copyCode()"><strong>CODE:</strong> <span style="color:#fff">${code}</span></div>`;
+        statusText.innerText = 'Code received';
       } catch (err) {
         pair.innerHTML = '<span style="color:orangered;font-weight:700">Error fetching code</span>';
+        statusText.innerText = 'Error';
       }
     });
 
@@ -171,33 +438,86 @@
         setTimeout(()=> el.innerHTML = old,700);
       }).catch(()=>{});
     }
+    window.copyCode = copyCode;
 
-    // clear button
-    document.getElementById('clearBtn').addEventListener('click', ()=> {
+    // clear
+    clearBtn.addEventListener('click', ()=> {
       num.value=''; pair.innerHTML=''; num.type='tel'; num.style.background='';
+      statusText.innerText = 'Cleared';
     });
 
-    // join button: slide & fade then open link
-    const joinBtn = document.getElementById('joinBtn');
-    const mainBox = document.getElementById('mainBox');
-    const channelURL = "https://whatsapp.com/channel/0029Vb5OiseHltY10IBkF112/1066";
-
+    // join
     joinBtn.addEventListener('click', (ev) => {
       ev.preventDefault();
-      // play a small scale/translate animation by toggling hide class
       mainBox.classList.add('hide');
-      // after animation ends, open link
+      statusText.innerText = 'Opening channel...';
       setTimeout(()=> {
-        // try open in new tab; fallback to same tab
         const opened = window.open(channelURL, '_blank', 'noopener,noreferrer');
         if (!opened) window.location.href = channelURL;
-      }, 450);
+      }, 420);
     });
 
-    // optional: allow pressing Enter on input to submit
+    // quick actions
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(channelURL);
+        statusText.innerText = 'Channel link copied';
+      } catch {
+        statusText.innerText = 'Could not copy';
+      }
+    });
+    openBtn.addEventListener('click', ()=> {
+      window.open(channelURL, '_blank', 'noopener,noreferrer');
+    });
+
+    // Enter to submit
     num.addEventListener('keydown', (e)=> {
       if (e.key === 'Enter') submit.click();
     });
+
+    // Toggle video sound
+    soundToggle.addEventListener('click', async () => {
+      const isMuted = bgVideo.muted;
+      bgVideo.muted = !isMuted;
+      soundIcon.classList.toggle('fa-volume-mute', bgVideo.muted);
+      soundIcon.classList.toggle('fa-volume-up', !bgVideo.muted);
+      soundToggle.setAttribute('aria-pressed', String(!bgVideo.muted));
+      statusText.innerText = bgVideo.muted ? 'Video muted' : 'Video unmuted';
+    });
+
+    // Ambient play/pause
+    musicToggle.addEventListener('click', async () => {
+      try {
+        if (!ambientPlaying) {
+          await ambient.play();
+          ambientPlaying = true;
+          musicIcon.classList.remove('fa-play'); musicIcon.classList.add('fa-pause');
+          musicToggle.setAttribute('aria-pressed', 'true');
+          statusText.innerText = 'Ambient playing';
+        } else {
+          ambient.pause();
+          ambientPlaying = false;
+          musicIcon.classList.remove('fa-pause'); musicIcon.classList.add('fa-play');
+          musicToggle.setAttribute('aria-pressed', 'false');
+          statusText.innerText = 'Ambient paused';
+        }
+      } catch (err) {
+        statusText.innerText = 'Playback blocked — try interacting with the page';
+      }
+    });
+
+    // allow one user gesture to enable audio attempts
+    function userGestureInit(){
+      ambient.volume = 0.7;
+      window.removeEventListener('pointerdown', userGestureInit);
+    }
+    window.addEventListener('pointerdown', userGestureInit);
+
+    // initial ready
+    window.addEventListener('load', ()=> {
+      statusText.innerText = 'Ready';
+    });
   </script>
+
 </body>
 </html>
